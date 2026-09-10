@@ -8,5 +8,8 @@ func main() {
 		Addr:    ":8080",
 		Handler: router,
 	}
+
+	router.Handle("/", http.FileServer(http.Dir(".")))
+
 	server.ListenAndServe()
 }
