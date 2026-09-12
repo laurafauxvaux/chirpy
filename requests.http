@@ -1,0 +1,25 @@
+POST http://localhost:8080/api/validate_chirp
+Content-Type: application/json
+
+{
+  "body": "A new day on Chirpy"
+}
+
+###
+
+
+POST http://localhost:8080/api/validate_chirp
+Content-Type: application/json
+
+{
+  "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."
+}
+
+###
+
+POST http://localhost:8080/api/validate_chirp
+Content-Type: application/json
+
+{
+  "body": 
+}
