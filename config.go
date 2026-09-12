@@ -3,10 +3,13 @@ package main
 import (
 	"net/http"
 	"sync/atomic"
+
+	"github.com/laurafauxvaux/chirpy/internal/database"
 )
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
+	dbQueries      *database.Queries
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
