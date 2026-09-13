@@ -60,3 +60,55 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, req *http.Request) {
 	respondWithJSON(w, http.StatusCreated, newChirp)
 
 }
+
+func (cfg *apiConfig) HandlerGetChirps(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
+	chirps, err := cfg.dbQueries.GetAllChirps(ctx)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error gathering the chirps")
+		return
+	}
+
+	allChirps := make([]Chirp, len(chirps))
+
+	for i, chirp := range chirps {
+		allChirps[i] = Chirp{
+			ID:        chirp.ID,
+			CreatedAt: chirp.CreatedAt,
+			UpdatedAt: chirp.UpdatedAt,
+			Body:      chirp.Body,
+			UserID:    chirp.UserID,
+		}
+	}
+
+	respondWithJSON(w, http.StatusOK, allChirps)
+}
+
+func (cfg *apiConfig) HandlerGetChirp(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
+	chirpID := req.PathValue("chirpID")
+	chirpUUID, err := uuid.Parse(chirpID)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Couldn't parse UUID")
+		return
+	}
+
+	chirp, err := cfg.dbQueries.GetChirp(ctx, chirpUUID)
+
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Chirp can't be found.")
+		return
+	}
+
+	foundChirp := Chirp{
+		ID:        chirp.ID,
+		CreatedAt: chirp.CreatedAt,
+		UpdatedAt: chirp.UpdatedAt,
+		Body:      chirp.Body,
+		UserID:    chirp.UserID,
+	}
+
+	respondWithJSON(w, http.StatusOK, foundChirp)
+}
