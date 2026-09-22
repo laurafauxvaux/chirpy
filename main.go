@@ -40,11 +40,14 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
+
 	mux.HandleFunc("GET /admin/metrics", cfg.handlerMetrics)
 
 	mux.HandleFunc("POST /admin/reset", cfg.handlerReset)
 
 	mux.HandleFunc("POST /api/users", cfg.handlerUsers)
+
+	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 
 	mux.HandleFunc("POST /api/chirps", cfg.handlerChirps)
 	mux.HandleFunc("GET /api/chirps", cfg.HandlerGetChirps)
