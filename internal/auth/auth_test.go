@@ -2,6 +2,9 @@ package auth
 
 import (
 	"testing"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 func TestAuthWithMatch(t *testing.T) {
@@ -43,5 +46,54 @@ func TestAuthNoMatch(t *testing.T) {
 
 	if res {
 		t.Errorf("hash shouldn't match")
+	}
+}
+
+func TestJWTValid(t *testing.T) {
+	userID := uuid.New()
+	secret := "my-secret"
+
+	token, err := MakeJWT(userID, secret, time.Hour)
+	if err != nil {
+		t.Fatalf("MakeJWT returned an error: %v", err)
+	}
+
+	ID, err := ValidateJWT(token, secret)
+	if err != nil {
+		t.Fatalf("ValidateJWT returned an error: %v", err)
+	}
+
+	if ID != userID {
+		t.Errorf("got %v, want %v", ID, userID)
+	}
+}
+
+func TestJWTExpired(t *testing.T) {
+	userID := uuid.New()
+	secret := "my-secret"
+
+	token, err := MakeJWT(userID, secret, -time.Hour)
+	if err != nil {
+		t.Fatalf("MakeJWT returned an error: %v", err)
+	}
+
+	_, err = ValidateJWT(token, secret)
+	if err == nil {
+		t.Fatalf("ValidateJWT should return an error: token expired")
+	}
+}
+
+func TestJWTWrongSecret(t *testing.T) {
+	userID := uuid.New()
+	secret := "my-secret"
+
+	token, err := MakeJWT(userID, secret, time.Hour)
+	if err != nil {
+		t.Fatalf("MakeJWT returned an error: %v", err)
+	}
+
+	_, err = ValidateJWT(token, "other-secret")
+	if err == nil {
+		t.Fatalf("ValidateJWT should return an error: wrong secret")
 	}
 }
