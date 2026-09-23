@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/laurafauxvaux/chirpy/internal/auth"
 	"github.com/laurafauxvaux/chirpy/internal/database"
 )
 
@@ -21,8 +22,7 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
 	type params struct {
-		Body   string    `json:"body"`
-		UserID uuid.UUID `json:"user_id"`
+		Body string `json:"body"`
 	}
 
 	chirpParams := params{}
@@ -40,9 +40,20 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, req *http.Request) {
 
 	cleanedBody := cleanMessage(chirpParams.Body)
 
+	token, err := auth.GetBearerToken(req.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	userUUID, err := auth.ValidateJWT(token, cfg.secret)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
 	chirp, err := cfg.dbQueries.CreateChirp(ctx, database.CreateChirpParams{
 		Body:   cleanedBody,
-		UserID: chirpParams.UserID,
+		UserID: userUUID,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating new chirp")

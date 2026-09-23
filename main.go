@@ -15,6 +15,7 @@ func main() {
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
 	platform := os.Getenv("PLATFORM")
+	secret := os.Getenv("SECRET")
 
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -32,6 +33,7 @@ func main() {
 	cfg := &apiConfig{
 		dbQueries: dbQueries,
 		platform:  platform,
+		secret:    secret,
 	}
 
 	mux.Handle("/app/", cfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(".")))))
