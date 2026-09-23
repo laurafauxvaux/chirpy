@@ -6,29 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-
-	"github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
-
-func HashPassword(password string) (string, error) {
-	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
-	if err != nil {
-		return "", err
-	}
-
-	return hash, nil
-}
-
-func CheckPasswordHash(password, hash string) (bool, error) {
-	match, err := argon2id.ComparePasswordAndHash(password, hash)
-	if err != nil {
-		return false, err
-	}
-
-	return match, nil
-}
 
 func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (string, error) {
 	now := time.Now().UTC()
@@ -77,7 +57,7 @@ func GetBearerToken(headers http.Header) (string, error) {
 	}
 
 	if !strings.HasPrefix(authData, "Bearer ") {
-		return "", fmt.Errorf("bearer authorization doesn't exist")
+		return "", fmt.Errorf("no bearer token in authorization header")
 	}
 
 	tokenString := strings.TrimSpace(strings.TrimPrefix(authData, "Bearer "))
