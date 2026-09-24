@@ -19,14 +19,14 @@ type User struct {
 	RefreshToken string    `json:"refresh_token"`
 }
 
-func (cfg *apiConfig) handlerUsers(w http.ResponseWriter, req *http.Request) {
-	type parameters struct {
-		Password string `json:"password"`
-		Email    string `json:"email"`
-	}
+type parameters struct {
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
+func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
-
 	params := parameters{}
 
 	decoder := json.NewDecoder(req.Body)
@@ -58,4 +58,54 @@ func (cfg *apiConfig) handlerUsers(w http.ResponseWriter, req *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, newUser)
+}
+
+func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
+	token, err := auth.GetBearerToken(req.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	userID, err := auth.ValidateJWT(token, cfg.secret)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "token is expired or revoked")
+		return
+	}
+
+	params := parameters{}
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&params); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+
+	hashedPassword, err := auth.HashPassword(params.Password)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+
+	updatedUser, err := cfg.dbQueries.UpdateUser(ctx, database.UpdateUserParams{
+		Email:          params.Email,
+		HashedPassword: hashedPassword,
+		ID:             userID,
+	})
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+
+	user := User{
+		ID:        updatedUser.ID,
+		CreatedAt: updatedUser.CreatedAt,
+		UpdatedAt: updatedUser.UpdatedAt,
+		Email:     updatedUser.Email,
+	}
+
+	respondWithJSON(w, http.StatusOK, user)
+
 }

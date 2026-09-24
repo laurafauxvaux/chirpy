@@ -47,7 +47,7 @@ func main() {
 
 	mux.HandleFunc("POST /admin/reset", cfg.handlerReset)
 
-	mux.HandleFunc("POST /api/users", cfg.handlerUsers)
+	mux.HandleFunc("POST /api/users", cfg.handlerCreateUser)
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 
@@ -57,6 +57,8 @@ func main() {
 	mux.HandleFunc("POST /api/chirps", cfg.handlerChirps)
 	mux.HandleFunc("GET /api/chirps", cfg.HandlerGetChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.HandlerGetChirp)
+
+	mux.HandleFunc("PUT /api/users", cfg.handlerUpdateUser)
 
 	server.ListenAndServe()
 }
