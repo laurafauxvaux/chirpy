@@ -112,34 +112,3 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, req *http.Request
 	respondWithJSON(w, http.StatusOK, user)
 
 }
-
-func (cfg *apiConfig) handlerUpgradeUser(w http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	type polkaWebhooksParams struct {
-		Event string `json:"event"`
-		Data  struct {
-			UserID uuid.UUID `json:"user_id"`
-		} `json:"data"`
-	}
-	params := polkaWebhooksParams{}
-
-	decoder := json.NewDecoder(req.Body)
-	if err := decoder.Decode(&params); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid request body")
-		return
-	}
-
-	if params.Event != "user.upgraded" {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	_, err := cfg.dbQueries.UpgradeUser(ctx, params.Data.UserID)
-	if err != nil {
-		respondWithError(w, http.StatusNotFound, "user can't be found")
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
