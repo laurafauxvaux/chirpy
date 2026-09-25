@@ -30,7 +30,7 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, req *http.Request) {
 	decoder := json.NewDecoder(req.Body)
 
 	if err := decoder.Decode(&chirpParams); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Something went wrong")
+		respondWithError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 	if len(chirpParams.Body) > 140 {
@@ -72,7 +72,7 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (cfg *apiConfig) HandlerGetChirps(w http.ResponseWriter, req *http.Request) {
+func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
 	chirps, err := cfg.dbQueries.GetAllChirps(ctx)
@@ -96,7 +96,7 @@ func (cfg *apiConfig) HandlerGetChirps(w http.ResponseWriter, req *http.Request)
 	respondWithJSON(w, http.StatusOK, allChirps)
 }
 
-func (cfg *apiConfig) HandlerGetChirp(w http.ResponseWriter, req *http.Request) {
+func (cfg *apiConfig) handlerGetChirp(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
 	chirpID := req.PathValue("chirpID")

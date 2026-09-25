@@ -55,11 +55,13 @@ func main() {
 	mux.HandleFunc("POST /api/revoke", cfg.handlerRevoke)
 
 	mux.HandleFunc("POST /api/chirps", cfg.handlerChirps)
-	mux.HandleFunc("GET /api/chirps", cfg.HandlerGetChirps)
-	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.HandlerGetChirp)
+	mux.HandleFunc("GET /api/chirps", cfg.handlerGetChirps)
+	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.handlerGetChirp)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", cfg.handlerDeleteChirp)
 
 	mux.HandleFunc("PUT /api/users", cfg.handlerUpdateUser)
+
+	mux.HandleFunc("POST /api/polka/webhooks", cfg.handlerUpgradeUser)
 
 	server.ListenAndServe()
 }
