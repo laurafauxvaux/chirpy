@@ -75,7 +75,22 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, req *http.Request) {
 func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
-	chirps, err := cfg.dbQueries.GetAllChirps(ctx)
+	var chirps []database.Chirp
+	var err error
+
+	authorID := req.URL.Query().Get("author_id")
+
+	if authorID == "" {
+		chirps, err = cfg.dbQueries.GetAllChirps(ctx)
+	} else {
+		authorUUID, err := uuid.Parse((authorID))
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "invalid authod ID")
+			return
+		}
+		chirps, err = cfg.dbQueries.GetChirpsByAuthor(ctx, authorUUID)
+	}
+
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error gathering the chirps")
 		return
@@ -92,7 +107,6 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, req *http.Request)
 			UserID:    chirp.UserID,
 		}
 	}
-
 	respondWithJSON(w, http.StatusOK, allChirps)
 }
 
