@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -79,13 +80,14 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, req *http.Request)
 	var err error
 
 	authorID := req.URL.Query().Get("author_id")
+	sorting := req.URL.Query().Get("sort")
 
 	if authorID == "" {
 		chirps, err = cfg.dbQueries.GetAllChirps(ctx)
 	} else {
-		authorUUID, err := uuid.Parse((authorID))
-		if err != nil {
-			respondWithError(w, http.StatusBadRequest, "invalid authod ID")
+		authorUUID, parseErr := uuid.Parse((authorID))
+		if parseErr != nil {
+			respondWithError(w, http.StatusBadRequest, "invalid author ID")
 			return
 		}
 		chirps, err = cfg.dbQueries.GetChirpsByAuthor(ctx, authorUUID)
@@ -107,6 +109,16 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, req *http.Request)
 			UserID:    chirp.UserID,
 		}
 	}
+
+	switch sorting {
+	case "asc":
+		sort.Slice(allChirps, func(i, j int) bool { return allChirps[i].CreatedAt.Before(allChirps[j].CreatedAt) })
+	case "desc":
+		{
+			sort.Slice(allChirps, func(i, j int) bool { return allChirps[i].CreatedAt.After(allChirps[j].CreatedAt) })
+		}
+	}
+
 	respondWithJSON(w, http.StatusOK, allChirps)
 }
 
