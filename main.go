@@ -13,10 +13,25 @@ import (
 
 func main() {
 	godotenv.Load()
+
 	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("DB_URL must be set")
+	}
+
 	platform := os.Getenv("PLATFORM")
+	if platform == "" {
+		log.Fatal("PLATFORM must be set")
+	}
+
 	secret := os.Getenv("SECRET")
+	if secret == "" {
+		log.Fatal("SECRET environment variable is not set")
+	}
 	polkaKey := os.Getenv("POLKA_KEY")
+	if secret == "" {
+		log.Fatal("POLKA_KEY environment variable is not set")
+	}
 
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
